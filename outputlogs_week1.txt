@@ -1,0 +1,46 @@
+Found 12 Sold files.
+Found 12 Listing files.
+
+--- PROCESSING SOLD TRANSACTIONS ---
+File: CRMLSSold202401_filled.csv | Row count: 17958
+File: CRMLSSold202402.csv | Row count: 19925
+File: CRMLSSold202403_filled.csv | Row count: 23276
+File: CRMLSSold202404_filled.csv | Row count: 24640
+File: CRMLSSold202405_filled.csv | Row count: 26487
+File: CRMLSSold202406_filled.csv | Row count: 24328
+File: CRMLSSold202407_filled.csv | Row count: 26240
+File: CRMLSSold202408.csv | Row count: 24558
+File: CRMLSSold202409.csv | Row count: 21267
+File: CRMLSSold202410.csv | Row count: 23274
+File: CRMLSSold202411.csv | Row count: 20279
+File: CRMLSSold202412.csv | Row count: 20241
+
+Sum of individual Sold file rows: 272473
+Total rows AFTER concatenation: 272473
+Rows before Residential filter: 272473
+Rows after Residential filter: 186243
+Removed 86230 non-residential rows.
+Saved: combined_sold_residential.csv
+
+--- PROCESSING LISTINGS TRANSACTIONS ---
+File: CRMLSListing202401.csv | Row count: 27454
+File: CRMLSListing202402.csv | Row count: 27447
+File: CRMLSListing202403.csv | Row count: 32282
+File: CRMLSListing202404.csv | Row count: 36503
+File: CRMLSListing202405.csv | Row count: 38796
+File: CRMLSListing202406.csv | Row count: 35893
+File: CRMLSListing202407.csv | Row count: 36340
+File: CRMLSListing202408.csv | Row count: 35305
+File: CRMLSListing202409.csv | Row count: 34625
+File: CRMLSListing202410.csv | Row count: 34730
+File: CRMLSListing202411.csv | Row count: 25128
+File: CRMLSListing202412.csv | Row count: 19417
+
+Sum of individual Listing file rows: 383920
+Total rows AFTER concatenation: 383920
+Rows before Residential filter: 383920
+Rows after Residential filter: 242994
+Removed 140926 non-residential rows.
+Saved: combined_listings_residential.csv
+
+Processing complete!
