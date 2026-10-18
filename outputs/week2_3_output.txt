@@ -1,0 +1,312 @@
+
+==============================================================================
+A1. PROPERTY TYPES IN THE RAW MONTHLY FILES (before Residential filter)
+==============================================================================
+
+CRMLSSold: unique PropertyType values = ['Residential', 'ResidentialLease', 'Land', 'ManufacturedInPark', 'ResidentialIncome', 'CommercialSale', 'CommercialLease', 'BusinessOpportunity']
+                       rows  share_%
+PropertyType                        
+Residential          414139    67.24
+ResidentialLease     141054    22.90
+Land                  20055     3.26
+ManufacturedInPark    16714     2.71
+ResidentialIncome     16484     2.68
+CommercialSale         3852     0.63
+CommercialLease        3219     0.52
+BusinessOpportunity     414     0.07
+
+CRMLSListing: unique PropertyType values = ['Residential', 'ResidentialLease', 'Land', 'ResidentialIncome', 'ManufacturedInPark', 'CommercialSale', 'CommercialLease', 'BusinessOpportunity']
+                       rows  share_%
+PropertyType                        
+Residential          547162    63.56
+ResidentialLease     178740    20.76
+Land                  56281     6.54
+ResidentialIncome     31878     3.70
+ManufacturedInPark    24650     2.86
+CommercialSale        11682     1.36
+CommercialLease        7758     0.90
+BusinessOpportunity    2747     0.32
+
+Filtering logic: df = df[df['PropertyType'] == 'Residential'] (done in Week 1; re-asserted below).
+
+==============================================================================
+A2. STRUCTURE & MISSING VALUES - SOLD
+==============================================================================
+Rows: 414,139   Columns: 84
+
+Column data types:
+object     52
+float64    29
+int64       3
+
+Null-count summary table (top 30 by % missing; full table in csv/missing_value_report_*.csv):
+                                dtype  null_count  null_pct  over_90pct_null      field_group  core_field decision
+AboveGradeFinishedArea        float64      414139    100.00             True  market_analysis       False     DROP
+CoveredSpaces                 float64      414139    100.00             True  market_analysis       False     DROP
+TaxAnnualAmount               float64      414139    100.00             True  market_analysis       False     DROP
+TaxYear                       float64      414139    100.00             True  market_analysis       False     DROP
+ElementarySchoolDistrict      float64      414139    100.00             True  market_analysis       False     DROP
+FireplacesTotal               float64      414139    100.00             True  market_analysis       False     DROP
+MiddleOrJuniorSchoolDistrict  float64      414139    100.00             True  market_analysis       False     DROP
+BusinessType                  float64      414139    100.00             True  market_analysis       False     DROP
+WaterfrontYN                   object      413880     99.94             True  market_analysis       False     DROP
+BelowGradeFinishedArea        float64      411736     99.42             True  market_analysis       False     DROP
+BasementYN                     object      406037     98.04             True  market_analysis       False     DROP
+LotSizeDimensions              object      394025     95.14             True  market_analysis       False     DROP
+BuilderName                    object      393851     95.10             True  market_analysis       False     DROP
+BuildingAreaTotal             float64      385136     93.00             True  market_analysis       False     DROP
+CoBuyerAgentFirstName          object      376480     90.91             True  market_analysis       False     DROP
+OriginatingSystemSubName       object      369545     89.23            False         metadata       False     KEEP
+OriginatingSystemName          object      369545     89.23            False         metadata       False     KEEP
+ElementarySchool               object      359055     86.70            False  market_analysis       False     KEEP
+MiddleOrJuniorSchool           object      358663     86.60            False  market_analysis       False     KEEP
+BuyerAgencyCompensationType    object      356811     86.16            False  market_analysis       False     KEEP
+BuyerAgencyCompensation       float64      356824     86.16            False  market_analysis       False     KEEP
+HighSchool                     object      342099     82.60            False  market_analysis       False     KEEP
+CoListAgentFirstName           object      319226     77.08            False  market_analysis       False     KEEP
+CoListAgentLastName            object      318981     77.02            False  market_analysis       False     KEEP
+CoListOfficeName               object      316127     76.33            False  market_analysis       False     KEEP
+lonfilled                      object      305982     73.88            False  market_analysis       False     KEEP
+latfilled                      object      305982     73.88            False  market_analysis       False     KEEP
+SubdivisionName                object      260066     62.80            False  market_analysis       False     KEEP
+AssociationFeeFrequency        object      241555     58.33            False  market_analysis       False     KEEP
+MainLevelBedrooms             float64      173866     41.98            False  market_analysis       False     KEEP
+
+Columns > 90% null: 15
+                              null_pct  core_field decision
+AboveGradeFinishedArea          100.00       False     DROP
+CoveredSpaces                   100.00       False     DROP
+TaxAnnualAmount                 100.00       False     DROP
+TaxYear                         100.00       False     DROP
+ElementarySchoolDistrict        100.00       False     DROP
+FireplacesTotal                 100.00       False     DROP
+MiddleOrJuniorSchoolDistrict    100.00       False     DROP
+BusinessType                    100.00       False     DROP
+WaterfrontYN                     99.94       False     DROP
+BelowGradeFinishedArea           99.42       False     DROP
+BasementYN                       98.04       False     DROP
+LotSizeDimensions                95.14       False     DROP
+BuilderName                      95.10       False     DROP
+BuildingAreaTotal                93.00       False     DROP
+CoBuyerAgentFirstName            90.91       False     DROP
+
+Field groups: {'market_analysis': 72, 'metadata': 12}
+
+==============================================================================
+A3. NUMERIC DISTRIBUTIONS - SOLD
+==============================================================================
+                          count        mean         std     min        1%         5%        25%        50%         75%         95%         99%           max     median    skew  iqr_outliers
+ClosePrice             414135.0  1188410.85  5967414.53     0.0  202434.0  340000.00  575000.00  823000.00  1300000.00  2850000.00  5560660.00  9.895000e+08  823000.00  121.17         30762
+ListPrice              414139.0  1140363.21  1359468.07   525.0  214900.0  347000.00  576000.00  815000.00  1295000.00  2850000.00  5700000.00  1.375000e+08  815000.00   14.87         31047
+OriginalListPrice      413378.0  1225266.28  6709309.71     0.0  210000.0  349900.00  585000.00  825000.00  1299000.00  2899954.80  5995000.00  1.390000e+09  825000.00  124.77         32247
+LivingArea             413905.0     1903.71    26473.48     0.0     604.0     840.00    1248.00    1642.00     2219.00     3559.00     5281.96  1.702132e+07    1642.00  641.95         18208
+LotSizeAcres           381572.0       66.29    15997.07     0.0       0.0       0.03       0.12       0.17        0.27        2.82       10.83  7.810698e+06       0.17  399.43         59362
+BedroomsTotal          414128.0        3.20        1.07     0.0       1.0       2.00       3.00       3.00        4.00        5.00        6.00  4.500000e+01       3.00    0.79         22746
+BathroomsTotalInteger  414070.0        2.53        1.13     0.0       1.0       1.00       2.00       2.00        3.00        4.00        6.00  1.750000e+02       2.00   15.90         19047
+DaysOnMarket           414139.0       37.36       53.60  -288.0       0.0       1.00       8.00      18.00       48.00      132.00      231.00  1.243000e+04      18.00   32.99         31817
+YearBuilt              413767.0     1978.59       26.28  1776.0    1912.0    1930.00    1960.00    1979.00     1999.00     2022.00     2025.00  2.026000e+03    1979.00   -0.28           975
+
+Core three (min, max, mean, median, percentiles):
+                 count        mean         std    min        1%        5%       25%       50%        75%        95%         99%          max    median    skew  iqr_outliers
+ClosePrice    414135.0  1188410.85  5967414.53    0.0  202434.0  340000.0  575000.0  823000.0  1300000.0  2850000.0  5560660.00  989500000.0  823000.0  121.17         30762
+LivingArea    413905.0     1903.71    26473.48    0.0     604.0     840.0    1248.0    1642.0     2219.0     3559.0     5281.96   17021321.0    1642.0  641.95         18208
+DaysOnMarket  414139.0       37.36       53.60 -288.0       0.0       1.0       8.0      18.0       48.0      132.0      231.00      12430.0      18.0   32.99         31817
+Saved plots/distributions_sold.png
+
+sold: dropping 15 columns >90% null and non-core: ['AboveGradeFinishedArea', 'CoveredSpaces', 'TaxAnnualAmount', 'TaxYear', 'ElementarySchoolDistrict', 'FireplacesTotal', 'MiddleOrJuniorSchoolDistrict', 'BusinessType', 'WaterfrontYN', 'BelowGradeFinishedArea', 'BasementYN', 'LotSizeDimensions', 'BuilderName', 'BuildingAreaTotal', 'CoBuyerAgentFirstName']
+Saved csv/sold_filtered.csv  (414,139 rows x 69 cols)
+
+==============================================================================
+A2. STRUCTURE & MISSING VALUES - LISTINGS
+==============================================================================
+Rows: 547,162   Columns: 84
+
+Column data types:
+object     47
+float64    33
+int64       4
+
+Null-count summary table (top 30 by % missing; full table in csv/missing_value_report_*.csv):
+                                dtype  null_count  null_pct  over_90pct_null      field_group  core_field decision
+TaxAnnualAmount               float64      547162    100.00             True  market_analysis       False     DROP
+FireplacesTotal               float64      547162    100.00             True  market_analysis       False     DROP
+ElementarySchoolDistrict      float64      547162    100.00             True  market_analysis       False     DROP
+TaxYear                       float64      547162    100.00             True  market_analysis       False     DROP
+BusinessType                  float64      547162    100.00             True  market_analysis       False     DROP
+MiddleOrJuniorSchoolDistrict  float64      547162    100.00             True  market_analysis       False     DROP
+CoveredSpaces                 float64      547162    100.00             True  market_analysis       False     DROP
+AboveGradeFinishedArea        float64      547162    100.00             True  market_analysis       False     DROP
+BelowGradeFinishedArea        float64      544075     99.44             True  market_analysis       False     DROP
+CoBuyerAgentFirstName          object      533466     97.50             True  market_analysis       False     DROP
+BuilderName                    object      521800     95.36             True  market_analysis       False     DROP
+LotSizeDimensions              object      518630     94.79             True  market_analysis       False     DROP
+BuildingAreaTotal             float64      498810     91.16             True  market_analysis       False     DROP
+MiddleOrJuniorSchool           object      481661     88.03            False  market_analysis       False     KEEP
+ElementarySchool               object      481686     88.03            False  market_analysis       False     KEEP
+BuyerAgencyCompensation       float64      468169     85.56            False  market_analysis       False     KEEP
+BuyerAgencyCompensationType    object      468149     85.56            False  market_analysis       False     KEEP
+HighSchool                     object      461270     84.30            False  market_analysis       False     KEEP
+CoListAgentFirstName           object      425295     77.73            False  market_analysis       False     KEEP
+CoListAgentLastName            object      424892     77.65            False  market_analysis       False     KEEP
+CoListOfficeName               object      424799     77.64            False  market_analysis       False     KEEP
+ClosePrice                    float64      409481     74.84            False  market_analysis        True     KEEP
+BuyerOfficeAOR                 object      406788     74.35            False         metadata       False     KEEP
+BuyerOfficeName                object      397275     72.61            False  market_analysis        True     KEEP
+BuyerOfficeName.1              object      397275     72.61            False  market_analysis       False     KEEP
+BuyerAgentFirstName            object      395832     72.34            False  market_analysis        True     KEEP
+BuyerAgentMlsId                object      395246     72.24            False         metadata       False     KEEP
+BuyerAgentLastName             object      395138     72.22            False  market_analysis        True     KEEP
+CloseDate                      object      388096     70.93            False  market_analysis        True     KEEP
+CloseDate.1                    object      388096     70.93            False  market_analysis       False     KEEP
+
+Columns > 90% null: 13
+                              null_pct  core_field decision
+TaxAnnualAmount                 100.00       False     DROP
+FireplacesTotal                 100.00       False     DROP
+ElementarySchoolDistrict        100.00       False     DROP
+TaxYear                         100.00       False     DROP
+BusinessType                    100.00       False     DROP
+MiddleOrJuniorSchoolDistrict    100.00       False     DROP
+CoveredSpaces                   100.00       False     DROP
+AboveGradeFinishedArea          100.00       False     DROP
+BelowGradeFinishedArea           99.44       False     DROP
+CoBuyerAgentFirstName            97.50       False     DROP
+BuilderName                      95.36       False     DROP
+LotSizeDimensions                94.79       False     DROP
+BuildingAreaTotal                91.16       False     DROP
+
+Field groups: {'market_analysis': 76, 'metadata': 8}
+
+==============================================================================
+A3. NUMERIC DISTRIBUTIONS - LISTINGS
+==============================================================================
+                          count        mean         std     min         1%         5%        25%        50%         75%         95%         99%           max     median    skew  iqr_outliers
+ClosePrice             137681.0  1203601.57  4408814.13   525.0  213500.00  350000.00  600000.00  850000.00  1350000.00  2900000.00  5550000.00  8.200000e+08  850000.00  124.04          9944
+ListPrice              547162.0  1315171.05  2395179.45   100.0  211960.39  345000.00  583002.50  848994.50  1385000.00  3450000.00  8150000.00  4.000000e+08  848994.50   27.86         45935
+OriginalListPrice      546373.0  1398709.23  7340380.05     0.0  200000.00  348000.00  585000.00  849000.00  1395000.00  3495000.00  8499266.00  1.390000e+09  849000.00  101.90         45037
+LivingArea             546610.0     1979.90    23233.22     0.0     589.00     817.00    1248.00    1670.00     2300.00     3864.00     6282.00  1.702132e+07    1670.00  720.57         27011
+LotSizeAcres           502132.0       64.22    12056.84     0.0       0.00       0.03       0.12       0.17        0.31        3.56       13.44  4.187292e+06       0.17  334.92         80487
+BedroomsTotal          547029.0        3.23        1.19     0.0       1.00       2.00       2.00       3.00        4.00        5.00        6.00  9.400000e+01       3.00    3.30          1751
+BathroomsTotalInteger  547107.0        2.63        3.24     0.0       1.00       1.00       2.00       2.00        3.00        5.00        7.00  2.208000e+03       2.00  576.80         34529
+DaysOnMarket           547162.0       18.63       26.52   -58.0       0.00       0.00       5.00      10.00       21.00       71.00      138.00  7.310000e+02      10.00    3.73         48732
+YearBuilt              546235.0     1979.58       26.99  1776.0    1911.00    1929.00    1961.00    1980.00     2001.00     2023.00     2025.00  2.028000e+03    1980.00   -0.33          1382
+
+Core three (min, max, mean, median, percentiles):
+                 count        mean         std    min        1%        5%       25%       50%        75%        95%        99%          max    median    skew  iqr_outliers
+ClosePrice    137681.0  1203601.57  4408814.13  525.0  213500.0  350000.0  600000.0  850000.0  1350000.0  2900000.0  5550000.0  820000000.0  850000.0  124.04          9944
+LivingArea    546610.0     1979.90    23233.22    0.0     589.0     817.0    1248.0    1670.0     2300.0     3864.0     6282.0   17021321.0    1670.0  720.57         27011
+DaysOnMarket  547162.0       18.63       26.52  -58.0       0.0       0.0       5.0      10.0       21.0       71.0      138.0        731.0      10.0    3.73         48732
+Saved plots/distributions_listings.png
+
+listings: dropping 13 columns >90% null and non-core: ['TaxAnnualAmount', 'FireplacesTotal', 'ElementarySchoolDistrict', 'TaxYear', 'BusinessType', 'MiddleOrJuniorSchoolDistrict', 'CoveredSpaces', 'AboveGradeFinishedArea', 'BelowGradeFinishedArea', 'CoBuyerAgentFirstName', 'BuilderName', 'LotSizeDimensions', 'BuildingAreaTotal']
+Saved csv/listings_filtered.csv  (547,162 rows x 71 cols)
+
+==============================================================================
+A4. EDA QUESTIONS (SOLD)
+==============================================================================
+Median close price: $823,000   Mean close price: $1,188,411
+
+Days on Market distribution (share of sold):
+DaysOnMarket
+<=0        4.0
+1-7       20.4
+8-30      38.5
+31-60     17.6
+61-90      8.7
+91-180     8.6
+180+       2.1
+DOM median 18, mean 37.4, p95 132
+
+Sold ABOVE list: 40.1%   BELOW list: 42.6%   AT list: 17.4%   (n=414,135)
+
+Date consistency issues:
+  Listing date AFTER close date:       63
+  Purchase contract AFTER close date:  240
+  Listing date AFTER purchase contract:270
+  Missing: ListingContractDate=1, PurchaseContractDate=194, CloseDate=0
+
+Top 10 counties by median close price (counties with >= 200 sales):
+                   median   count
+CountyOrParish                   
+San Mateo       1700000.0    7273
+Santa Clara     1600000.0   18426
+Santa Cruz      1200000.0    3001
+San Francisco   1198950.0     956
+Orange          1175000.0   46603
+Alameda         1133000.0   19541
+Monterey         910000.0    3986
+Los Angeles      900000.0  102913
+San Diego        899000.0   51202
+Ventura          869000.0   12882
+
+==============================================================================
+B1. FRED MORTGAGE30US -> MONTHLY AVERAGE
+==============================================================================
+Fetched 2,899 weekly observations: 1971-04-02 -> 2026-10-15  (null rates: 0)
+year_month  rate_30yr_fixed
+   2024-01            6.642
+   2024-02            6.776
+   2024-03            6.820
+   2024-04            6.992
+   2024-05            7.060
+   2024-06            6.918
+   2024-07            6.848
+   2024-08            6.500
+   2024-09            6.180
+   2024-10            6.428
+   2024-11            6.805
+   2024-12            6.715
+   2025-01            6.958
+   2025-02            6.842
+   2025-03            6.650
+   2025-04            6.725
+   2025-05            6.816
+   2025-06            6.818
+   2025-07            6.720
+   2025-08            6.588
+   2025-09            6.352
+   2025-10            6.254
+   2025-11            6.238
+   2025-12            6.190
+   2026-01            6.102
+   2026-02            6.048
+   2026-03            6.178
+   2026-04            6.332
+   2026-05            6.442
+   2026-06            6.490
+   2026-07            6.542
+   2026-08            6.668
+   2026-09            6.862
+   2026-10            7.360
+
+==============================================================================
+B2. MERGE RATES - SOLD (key: CloseDate)
+==============================================================================
+Rows before merge: 414,139   after: 414,139
+Null year_month keys: 0
+Null rate_30yr_fixed after merge: 0
+VALIDATION PASSED: no null rate values.
+    CloseDate year_month  rate_30yr_fixed
+0  2024-01-26    2024-01           6.6425
+1  2024-01-05    2024-01           6.6425
+2  2024-01-05    2024-01           6.6425
+3  2024-01-02    2024-01           6.6425
+4  2024-01-22    2024-01           6.6425
+Saved csv/sold_with_rates.csv
+
+==============================================================================
+B2. MERGE RATES - LISTINGS (key: ListingContractDate)
+==============================================================================
+Rows before merge: 547,162   after: 547,162
+Null year_month keys: 0
+Null rate_30yr_fixed after merge: 0
+VALIDATION PASSED: no null rate values.
+  ListingContractDate year_month  rate_30yr_fixed
+0          2024-01-01    2024-01           6.6425
+1          2024-01-24    2024-01           6.6425
+2          2024-01-12    2024-01           6.6425
+3          2024-01-20    2024-01           6.6425
+4          2024-01-12    2024-01           6.6425
+Saved csv/listings_with_rates.csv
+
+Weeks 2-3 complete.

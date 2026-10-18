@@ -1,0 +1,152 @@
+
+==============================================================================
+CLEANING - SOLD
+==============================================================================
+[start] rows=414,139 cols=71
+[1] Dropped 0 duplicate-header columns (identical to originals except noted rows): []
+[2] Dropped ListAgentEmail: personal contact data, not needed for market analytics
+[2] Dropped OriginatingSystemName: system metadata, ~89% null
+[2] Dropped OriginatingSystemSubName: system metadata, ~89% null
+[2] Dropped ListingKeyNumeric: 1:1 duplicate of ListingKey
+[3] Stripped whitespace and converted blanks to NaN in 45 text columns
+[4] Date conversion (nulls before -> after; increase = unparseable values):
+    CloseDate                         0 ->        0   dtype=datetime64[ns]
+    PurchaseContractDate            194 ->      194   dtype=datetime64[ns]
+    ListingContractDate               1 ->        1   dtype=datetime64[ns]
+    ContractStatusChangeDate        594 ->      594   dtype=datetime64[ns]
+[5] Numeric coercion (new NaNs introduced):
+    Done. BedroomsTotal/BathroomsTotalInteger/YearBuilt -> Int64; latfilled/lonfilled -> boolean
+[6] Removed 48 exact duplicate rows (414,139 -> 414,091)
+    Rows sharing a ListingKey (kept, flagged): 586
+[7] PropertySubType: 804 missing -> 'Unknown'
+[7] City: 311 missing -> 'Unknown'
+[7] MLSAreaMajor: 55,407 missing -> 'Unknown'
+[7] PostalCode: 2 missing -> 'Unknown'
+[7] Price/size/bed/bath fields are NOT imputed (a fabricated price would bias every metric); missing values stay NaN.
+[8] Invalid numeric flags (rows kept):
+                          count
+invalid_closeprice_flag       1
+invalid_listprice_flag        0
+invalid_livingarea_flag     150
+invalid_dom_flag             48
+invalid_bedrooms_flag         0
+invalid_bathrooms_flag        0
+any_invalid_numeric_flag    199
+[9] Date consistency flags (L=ListingContract <= P=PurchaseContract <= C=Close):
+                           count
+listing_after_close_flag      63
+purchase_after_close_flag    240
+negative_timeline_flag       510
+[10] Geographic data quality summary:
+                         count   pct
+geo_missing_flag          4108  0.99
+geo_zero_flag               27  0.01
+geo_positive_lon_flag       31  0.01
+geo_out_of_state_flag       34  0.01
+geo_state_mismatch_flag     29  0.01
+geo_invalid_flag          4200  1.01
+     Coordinates imputed upstream (latfilled/lonfilled == True): 45263
+
+==============================================================================
+SUMMARY - SOLD
+==============================================================================
+Rows   : 414,139 -> 414,091  (removed 48 exact duplicates)
+Columns: 71 -> 84  (removed 4, added 17 flags)
+
+Data type confirmation:
+                                   dtype
+CloseDate                 datetime64[ns]
+PurchaseContractDate      datetime64[ns]
+ListingContractDate       datetime64[ns]
+ContractStatusChangeDate  datetime64[ns]
+ClosePrice                       float64
+ListPrice                        float64
+OriginalListPrice                float64
+LivingArea                       float64
+DaysOnMarket                       int64
+BedroomsTotal                      Int64
+BathroomsTotalInteger              Int64
+YearBuilt                          Int64
+Latitude                         float64
+Longitude                        float64
+
+Rows with at least one flag: 5,479 of 414,091
+
+Saved csv/sold_cleaned.csv  (414,091 rows x 84 cols)
+
+==============================================================================
+CLEANING - LISTINGS
+==============================================================================
+[start] rows=547,162 cols=73
+    note: BuyerOfficeName.1 differs from BuyerOfficeName in 1 row(s), original kept: [{'BuyerOfficeName': 'Compass', 'BuyerOfficeName.1': 'Co'}]
+    note: UnparsedAddress.1 differs from UnparsedAddress in 1 row(s), original kept: [{'UnparsedAddress': '1369 Milton Ave', 'UnparsedAddress.1': nan}]
+[1] Dropped 11 duplicate-header columns (identical to originals except noted rows): ['PropertyType.1', 'ListAgentFirstName.1', 'DaysOnMarket.1', 'LivingArea.1', 'Longitude.1', 'Latitude.1', 'ListPrice.1', 'ListAgentLastName.1', 'CloseDate.1', 'BuyerOfficeName.1', 'UnparsedAddress.1']
+[2] Dropped ListAgentEmail: personal contact data, not needed for market analytics
+[2] Dropped ListingKeyNumeric: 1:1 duplicate of ListingKey
+[3] Stripped whitespace and converted blanks to NaN in 38 text columns
+[4] Date conversion (nulls before -> after; increase = unparseable values):
+    CloseDate                   388,096 ->  388,096   dtype=datetime64[ns]
+    PurchaseContractDate        285,676 ->  285,676   dtype=datetime64[ns]
+    ListingContractDate               0 ->        0   dtype=datetime64[ns]
+    ContractStatusChangeDate      6,311 ->    6,311   dtype=datetime64[ns]
+[5] Numeric coercion (new NaNs introduced):
+    Done. BedroomsTotal/BathroomsTotalInteger/YearBuilt -> Int64; latfilled/lonfilled -> boolean
+[6] Removed 0 exact duplicate rows (547,162 -> 547,162)
+    Rows sharing a ListingKey (kept, flagged): 276
+[7] PropertySubType: 1,263 missing -> 'Unknown'
+[7] City: 577 missing -> 'Unknown'
+[7] MLSAreaMajor: 74,488 missing -> 'Unknown'
+[7] PostalCode: 13 missing -> 'Unknown'
+[7] Price/size/bed/bath fields are NOT imputed (a fabricated price would bias every metric); missing values stay NaN.
+[8] Invalid numeric flags (rows kept):
+                          count
+invalid_closeprice_flag       0
+invalid_listprice_flag        0
+invalid_livingarea_flag     360
+invalid_dom_flag             27
+invalid_bedrooms_flag         0
+invalid_bathrooms_flag        0
+any_invalid_numeric_flag    387
+[9] Date consistency flags (L=ListingContract <= P=PurchaseContract <= C=Close):
+                           count
+listing_after_close_flag      73
+purchase_after_close_flag    262
+negative_timeline_flag       530
+[10] Geographic data quality summary:
+                         count    pct
+geo_missing_flag         80247  14.67
+geo_zero_flag               64   0.01
+geo_positive_lon_flag       73   0.01
+geo_out_of_state_flag      175   0.03
+geo_state_mismatch_flag    155   0.03
+geo_invalid_flag         80559  14.72
+     Coordinates imputed upstream (latfilled/lonfilled == True): n/a
+
+==============================================================================
+SUMMARY - LISTINGS
+==============================================================================
+Rows   : 547,162 -> 547,162  (removed 0 exact duplicates)
+Columns: 73 -> 77  (removed 13, added 17 flags)
+
+Data type confirmation:
+                                   dtype
+CloseDate                 datetime64[ns]
+PurchaseContractDate      datetime64[ns]
+ListingContractDate       datetime64[ns]
+ContractStatusChangeDate  datetime64[ns]
+ClosePrice                       float64
+ListPrice                        float64
+OriginalListPrice                float64
+LivingArea                       float64
+DaysOnMarket                       int64
+BedroomsTotal                      Int64
+BathroomsTotalInteger              Int64
+YearBuilt                          Int64
+Latitude                         float64
+Longitude                        float64
+
+Rows with at least one flag: 81,580 of 547,162
+
+Saved csv/listings_cleaned.csv  (547,162 rows x 77 cols)
+
+Weeks 4-5 complete.

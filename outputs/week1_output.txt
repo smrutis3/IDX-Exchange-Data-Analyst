@@ -1,0 +1,86 @@
+
+============================================================
+SOLD
+============================================================
+Sold: 28 contiguous months (202401 -> 202604)
+  CRMLSSold202401_filled.csv           rows:   17,958
+  CRMLSSold202402.csv                  rows:   19,925
+  CRMLSSold202403_filled.csv           rows:   23,276
+  CRMLSSold202404_filled.csv           rows:   24,640
+  CRMLSSold202405_filled.csv           rows:   26,487
+  CRMLSSold202406_filled.csv           rows:   24,328
+  CRMLSSold202407_filled.csv           rows:   26,240
+  CRMLSSold202408.csv                  rows:   24,558
+  CRMLSSold202409.csv                  rows:   21,267
+  CRMLSSold202410.csv                  rows:   23,274
+  CRMLSSold202411.csv                  rows:   20,279
+  CRMLSSold202412.csv                  rows:   20,241
+  CRMLSSold202501_filled.csv           rows:   18,738
+  CRMLSSold202502.csv                  rows:   18,702
+  CRMLSSold202503.csv                  rows:   21,445
+  CRMLSSold202504.csv                  rows:   23,262
+  CRMLSSold202505.csv                  rows:   23,154
+  CRMLSSold202506.csv                  rows:   22,883
+  CRMLSSold202507.csv                  rows:   23,646
+  CRMLSSold202508.csv                  rows:   22,972
+  CRMLSSold202509.csv                  rows:   22,443
+  CRMLSSold202510.csv                  rows:   23,233
+  CRMLSSold202511.csv                  rows:   19,088
+  CRMLSSold202512.csv                  rows:   20,538
+  CRMLSSold202601.csv                  rows:   16,487
+  CRMLSSold202602.csv                  rows:   19,010
+  CRMLSSold202603.csv                  rows:   23,372
+  CRMLSSold202604.csv                  rows:   24,485
+
+Rows before concatenation (sum of 28 files): 615,931
+Rows after concatenation: 615,931
+
+PropertyType values: {'Residential': 414139, 'ResidentialLease': 141054, 'Land': 20055, 'ManufacturedInPark': 16714, 'ResidentialIncome': 16484, 'CommercialSale': 3852, 'CommercialLease': 3219, 'BusinessOpportunity': 414}
+Rows before Residential filter: 615,931
+Rows after Residential filter:  414,139
+Removed non-Residential rows:   201,792
+Saved -> combined_sold_residential.csv (414,139 rows x 84 cols)
+
+============================================================
+LISTINGS
+============================================================
+Listings: 28 contiguous months (202401 -> 202604)
+  CRMLSListing202401.csv               rows:   27,454
+  CRMLSListing202402.csv               rows:   27,447
+  CRMLSListing202403.csv               rows:   32,282
+  CRMLSListing202404.csv               rows:   36,503
+  CRMLSListing202405.csv               rows:   38,796
+  CRMLSListing202406.csv               rows:   35,893
+  CRMLSListing202407.csv               rows:   36,340
+  CRMLSListing202408.csv               rows:   35,305
+  CRMLSListing202409.csv               rows:   34,625
+  CRMLSListing202410.csv               rows:   34,730
+  CRMLSListing202411.csv               rows:   25,128
+  CRMLSListing202412.csv               rows:   19,417
+  CRMLSListing202501.csv               rows:   37,469
+  CRMLSListing202502.csv               rows:   33,983
+  CRMLSListing202503.csv               rows:   38,492
+  CRMLSListing202504.csv               rows:   40,187
+  CRMLSListing202505.csv               rows:   40,271
+  CRMLSListing202506.csv               rows:   26,399
+  CRMLSListing202507.csv               rows:   27,345
+  CRMLSListing202508.csv               rows:   25,210
+  CRMLSListing202509.csv               rows:   26,923
+  CRMLSListing202510.csv               rows:   27,586
+  CRMLSListing202511.csv               rows:   20,677
+  CRMLSListing202512.csv               rows:   18,773
+  CRMLSListing202601.csv               rows:    2,606
+  CRMLSListing202602.csv               rows:   32,884
+  CRMLSListing202603.csv               rows:   39,153
+  CRMLSListing202604.csv               rows:   39,020
+
+Rows before concatenation (sum of 28 files): 860,898
+Rows after concatenation: 860,898
+
+PropertyType values: {'Residential': 547162, 'ResidentialLease': 178740, 'Land': 56281, 'ResidentialIncome': 31878, 'ManufacturedInPark': 24650, 'CommercialSale': 11682, 'CommercialLease': 7758, 'BusinessOpportunity': 2747}
+Rows before Residential filter: 860,898
+Rows after Residential filter:  547,162
+Removed non-Residential rows:   313,736
+Saved -> combined_listings_residential.csv (547,162 rows x 84 cols)
+
+Week 1 aggregation complete.
