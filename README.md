@@ -4,7 +4,7 @@ Code, progress, and findings for the **IDX Exchange 12-Week Data Analyst Interns
 
 **Data:** monthly CRMLS (California Regional MLS) Listing and Sold files, January 2024 - April 2026, produced from the CoreLogic Trestle API. The data is confidential MLS transaction data, so **no data files are committed to this repo** - only code and aggregate findings.
 
-**Pipeline:** `week1_aggregation.py` -> `week2_3_validation_enrichment.py` -> `week4_5_cleaning.py` -> *(Week 6+ feature engineering, outliers, Tableau)*
+**Pipeline:** `week1_aggregation.py` -> `week2_3_validation_enrichment.py` -> `week4_5_cleaning.py` -> `week6_feature_engineering.py` -> *(Week 7+ outliers, Tableau)*
 
 ---
 
@@ -13,7 +13,7 @@ Code, progress, and findings for the **IDX Exchange 12-Week Data Analyst Interns
 - [x] **Week 1:** Monthly dataset aggregation & Residential filtering
 - [x] **Weeks 2-3:** Dataset structuring, validation, EDA & FRED mortgage rate enrichment
 - [x] **Weeks 4-5:** Data cleaning, transformation & quality flags
-- [ ] **Week 6:** Feature engineering & housing market metrics
+- [x] **Week 6:** Feature engineering & housing market metrics *(school-district join pending)*
 - [ ] **Week 7:** Outlier detection (IQR) & quality flags
 - [ ] **Weeks 8-10:** Tableau dashboards (market & competitive analysis)
 - [ ] **Weeks 11-12:** Market intelligence report & final presentation
@@ -203,6 +203,82 @@ Expected order: `ListingContractDate` <= `PurchaseContractDate` <= `CloseDate`.
 
 ---
 
+## Week 6 - Feature Engineering and Market Metrics
+
+**Objective:** engineer the market indicators that power the Tableau dashboards, then summarize them by segment.
+
+**Script:** `week6_feature_engineering.py` (input: the Weeks 4-5 cleaned datasets)
+
+### Engineered metrics
+
+| Column | Formula | Purpose |
+|---|---|---|
+| `price_ratio` | `ClosePrice / ListPrice` | Negotiation vs. the final list price |
+| `close_to_original_list_ratio` | `ClosePrice / OriginalListPrice` | Captures the full price-reduction history |
+| `price_per_sqft` | `ClosePrice / LivingArea` | Normalizes price across home sizes |
+| `days_on_market` | `DaysOnMarket` (negatives -> null) | Time-to-sell |
+| `close_year`, `close_month`, `close_yrmo` | Derived from `CloseDate` | Time-series analysis |
+| `listing_to_contract_days` | `PurchaseContractDate - ListingContractDate` | Time from listing to accepted offer |
+| `contract_to_close_days` | `CloseDate - PurchaseContractDate` | Escrow / closing period |
+
+### Design decisions
+- **Two distinct ratios.** The handbook gives `ClosePrice / OriginalListPrice` for both Price Ratio and Close-to-Original-List Ratio. `price_ratio` uses the final `ListPrice` so the two metrics carry different information.
+- **No rows dropped, nothing imputed.** A metric is null when its inputs are invalid (price or area <= 0, negative days on market, or dates in the wrong order), using the Weeks 4-5 rules. Extreme-but-valid values are left for Week 7.
+- **Listings is filtered by `MlsStatus`.** Closed-sale metrics (ratios, price per sq ft, close date fields, contract-to-close) are computed only for `Closed` listings (137,676 of 547,162 rows), as flagged in Weeks 4-5. Segment tables use closed sales only.
+- **Medians lead the summaries** because the means are distorted by extreme values (see below).
+
+### Coverage (Sold, 414,091 rows)
+
+| Metric | Non-null | Median |
+|---|---|---|
+| `price_ratio` | 414,086 | 1.000 |
+| `close_to_original_list_ratio` | 413,323 | 0.996 |
+| `price_per_sqft` | 413,702 | $537 |
+| `days_on_market` | 414,043 | 18 days |
+| `listing_to_contract_days` | 413,626 | 25 days |
+| `contract_to_close_days` | 413,657 | 29 days |
+
+Out-of-order dates left 270 null `listing_to_contract_days` and 240 null `contract_to_close_days` in Sold. These match the Weeks 4-5 flag counts.
+
+### Segment analysis (Sold, closed sales, segments with >= 100 sales)
+
+Tables are saved as `segment_<sold|listings>_<propertytype|propertysubtype|county|mlsareamajor|listoffice|buyeroffice|year_month>.csv`. Each reports sales, median and mean close price, median price per sq ft, median days on market, median price ratios, % sold over list, and median listing-to-contract and contract-to-close days.
+
+**By PropertySubType (selected)**
+
+| Subtype | Sales | Median price | Median $/sq ft | Median DOM |
+|---|---|---|---|---|
+| Single Family Residence | 309,729 | $893,224 | $533 | 17 |
+| Condominium | 68,512 | $628,000 | $565 | 24 |
+| Townhouse | 24,296 | $805,000 | $562 | 17 |
+| Manufactured On Land | 5,343 | $324,000 | $226 | 30 |
+| Duplex | 2,253 | $915,000 | $544 | 22 |
+
+**By county (selected)**
+
+| County | Sales | Median price | Median $/sq ft | Median DOM | % sold over list |
+|---|---|---|---|---|---|
+| Santa Clara | 18,425 | $1,600,000 | $966 | 10 | 63.1% |
+| Alameda | 19,541 | $1,133,000 | $701 | 14 | 62.5% |
+| San Mateo | 7,271 | $1,700,000 | $1,051 | 12 | 57.3% |
+| Los Angeles | 102,893 | $900,000 | $608 | 19 | 42.3% |
+| Riverside | 57,383 | $600,000 | $321 | 30 | 31.3% |
+| Lake | 1,789 | $310,000 | $213 | 52 | 15.5% |
+
+County medians match the Weeks 2-3 results, confirming the pipeline is consistent.
+
+**Competitive view (top list offices by sales):** Compass (29,101 sales, median $1.35M, 14 days), Coldwell Banker Realty (18,693, $1.195M, 16 days), Keller Williams Realty (8,120, $870K, 15 days). The top 25 list and buyer offices are in the office segment files.
+
+### Findings
+- The Bay Area (Santa Clara, Alameda, San Mateo) is the tightest market: 57-63% of sales close above list in 10-14 days. Rural and inland counties (Lake, Mendocino) sell slowly (50+ days) and rarely above list.
+- Condos sell at a higher price per sq ft than single-family homes but take longer to sell (24 vs. 17 days).
+- Extremes remain in the engineered fields: `close_to_original_list_ratio` reaches 9.1 million, `price_per_sqft` reaches $1.16M, and `contract_to_close_days` reaches 36,629. These come from source data errors and are the main targets for Week 7 IQR handling.
+- Sacramento (886 sales) and Placer (200) are thinly represented in the dataset, so county comparisons for them should be read with caution.
+
+**Pending for Week 6:** adding school districts by joining latitude/longitude to the California school district boundary file (data.ca.gov).
+
+---
+
 ## How to Run
 
 Place the monthly CRMLS CSVs in a local `csv/` folder (not tracked), then from the repo root:
@@ -211,6 +287,7 @@ Place the monthly CRMLS CSVs in a local `csv/` folder (not tracked), then from t
 python week1_aggregation.py                # -> combined_sold_residential.csv, combined_listings_residential.csv
 python week2_3_validation_enrichment.py    # -> *_filtered.csv, *_with_rates.csv, missing-value and numeric summaries, plots/
 python week4_5_cleaning.py                 # -> sold_cleaned.csv, listings_cleaned.csv
+python week6_feature_engineering.py        # -> sold_featured.csv, listings_featured.csv, segment_*.csv
 ```
 
 Requires Python 3 with `pandas`, `numpy`, and `matplotlib`. The Weeks 2-3 script needs internet access to fetch the FRED series. All generated CSVs, plots and run logs stay local because the underlying data is confidential.
