@@ -2,7 +2,7 @@
 Week 1 - Monthly Dataset Aggregation
 IDX Exchange MLS Analytics Internship
 
-Concatenates every monthly CRMLS file (January 2024 -> latest month available)
+Concatenates every monthly CRMLS file (January 2024 -> latest month available(april))
 into one Listings dataset and one Sold dataset, filters both to
 PropertyType == 'Residential', and saves them as new CSVs.
 
