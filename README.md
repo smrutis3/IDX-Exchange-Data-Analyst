@@ -13,7 +13,7 @@ Code, progress, and findings for the **IDX Exchange 12-Week Data Analyst Interns
 - [x] **Week 1:** Monthly dataset aggregation & Residential filtering
 - [x] **Weeks 2-3:** Dataset structuring, validation, EDA & FRED mortgage rate enrichment
 - [x] **Weeks 4-5:** Data cleaning, transformation & quality flags
-- [x] **Week 6:** Feature engineering & housing market metrics *(school-district join pending)*
+- [x] **Week 6:** Feature engineering, housing market metrics & school-district join
 - [ ] **Week 7:** Outlier detection (IQR) & quality flags
 - [ ] **Weeks 8-10:** Tableau dashboards (market & competitive analysis)
 - [ ] **Weeks 11-12:** Market intelligence report & final presentation
@@ -213,7 +213,7 @@ Expected order: `ListingContractDate` <= `PurchaseContractDate` <= `CloseDate`.
 
 | Column | Formula | Purpose |
 |---|---|---|
-| `price_ratio` | `ClosePrice / ListPrice` | Negotiation vs. the final list price |
+| `price_ratio` | `ClosePrice / OriginalListPrice` | Negotiation strength (handbook formula) |
 | `close_to_original_list_ratio` | `ClosePrice / OriginalListPrice` | Captures the full price-reduction history |
 | `price_per_sqft` | `ClosePrice / LivingArea` | Normalizes price across home sizes |
 | `days_on_market` | `DaysOnMarket` (negatives -> null) | Time-to-sell |
@@ -222,7 +222,7 @@ Expected order: `ListingContractDate` <= `PurchaseContractDate` <= `CloseDate`.
 | `contract_to_close_days` | `CloseDate - PurchaseContractDate` | Escrow / closing period |
 
 ### Design decisions
-- **Two distinct ratios.** The handbook gives `ClosePrice / OriginalListPrice` for both Price Ratio and Close-to-Original-List Ratio. `price_ratio` uses the final `ListPrice` so the two metrics carry different information.
+- **Price Ratio follows the handbook.** The handbook defines Price Ratio and Close-to-Original-List Ratio with the same formula (`ClosePrice / OriginalListPrice`), so the two columns are identical. `% sold over list` in the segment tables is measured against the final `ListPrice`, consistent with the Weeks 2-3 EDA.
 - **No rows dropped, nothing imputed.** A metric is null when its inputs are invalid (price or area <= 0, negative days on market, or dates in the wrong order), using the Weeks 4-5 rules. Extreme-but-valid values are left for Week 7.
 - **Listings is filtered by `MlsStatus`.** Closed-sale metrics (ratios, price per sq ft, close date fields, contract-to-close) are computed only for `Closed` listings (137,676 of 547,162 rows), as flagged in Weeks 4-5. Segment tables use closed sales only.
 - **Medians lead the summaries** because the means are distorted by extreme values (see below).
@@ -231,7 +231,7 @@ Expected order: `ListingContractDate` <= `PurchaseContractDate` <= `CloseDate`.
 
 | Metric | Non-null | Median |
 |---|---|---|
-| `price_ratio` | 414,086 | 1.000 |
+| `price_ratio` | 413,323 | 0.996 |
 | `close_to_original_list_ratio` | 413,323 | 0.996 |
 | `price_per_sqft` | 413,702 | $537 |
 | `days_on_market` | 414,043 | 18 days |
@@ -275,7 +275,24 @@ County medians match the Weeks 2-3 results, confirming the pipeline is consisten
 - Extremes remain in the engineered fields: `close_to_original_list_ratio` reaches 9.1 million, `price_per_sqft` reaches $1.16M, and `contract_to_close_days` reaches 36,629. These come from source data errors and are the main targets for Week 7 IQR handling.
 - Sacramento (886 sales) and Placer (200) are thinly represented in the dataset, so county comparisons for them should be read with caution.
 
-**Pending for Week 6:** adding school districts by joining latitude/longitude to the California school district boundary file (data.ca.gov).
+### School districts
+
+**Script:** `week6_school_districts.py` (run after `week6_feature_engineering.py`; needs `geopandas`, installed in a local `.venv`)
+
+Each property's latitude/longitude is spatially joined to the California Department of Education **School District Areas 2025-26** boundary file (data.ca.gov). The file has three overlapping district types (Unified, Elementary, High), so two columns are produced: `school_district` (Unified, or Elementary when there is no Unified district) and `high_school_district`, plus `school_district_type`, `school_district_cds` and `school_district_source`.
+
+| | Sold | Listings |
+|---|---|---|
+| Rows with a school district | 409,881 (99.0%) | 466,586 (85.3%) |
+| Matched inside a district polygon | 409,772 | 466,445 |
+| Matched to the nearest district within 1 km | 109 | 141 |
+| Unmatched (out-of-state coordinates) | 10 | 17 |
+| No usable coordinates -> `Unknown` | 4,200 | 80,559 |
+
+- Coordinates are never guessed: rows with missing or invalid coordinates (the Weeks 4-5 `geo_invalid_flag`) are labelled `Unknown`.
+- **Check:** for 99.7% of matched rows the district's county equals `CountyOrParish`.
+- 735 distinct districts appear in Sold; 341 have >= 100 sales and are summarized in `segment_sold_schooldistrict.csv`.
+- Largest: Los Angeles Unified (42,121 sales, median $980,000), San Diego Unified (14,949, $930,000), Capistrano Unified (8,605, $1,350,000, the priciest of the large districts).
 
 ---
 
@@ -288,6 +305,7 @@ python week1_aggregation.py                # -> combined_sold_residential.csv, c
 python week2_3_validation_enrichment.py    # -> *_filtered.csv, *_with_rates.csv, missing-value and numeric summaries, plots/
 python week4_5_cleaning.py                 # -> sold_cleaned.csv, listings_cleaned.csv
 python week6_feature_engineering.py        # -> sold_featured.csv, listings_featured.csv, segment_*.csv
+.venv/bin/python week6_school_districts.py # -> adds school district columns to the featured files (needs geopandas)
 ```
 
 Requires Python 3 with `pandas`, `numpy`, and `matplotlib`. The Weeks 2-3 script needs internet access to fetch the FRED series. All generated CSVs, plots and run logs stay local because the underlying data is confidential.
