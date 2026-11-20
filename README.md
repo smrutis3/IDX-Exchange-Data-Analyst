@@ -193,7 +193,7 @@ Expected order: `ListingContractDate` <= `PurchaseContractDate` <= `CloseDate`.
 - **About 1% of sold records have unusable coordinates**, almost all of them missing. Listings have far more missing coordinates (14.7%) because they include active and pending homes that are newer or incomplete in the MLS.
 - Several invalid coordinates are recognizable errors, such as positive longitudes with a dropped minus sign, and `0,0` or `1,2` placeholders.
 - Many "out of box" coordinates are legitimate out-of-state properties that the MLS labels "Outside Area".
-- **45,263 sold rows (about 11%)** have coordinates that were imputed upstream (`latfilled` / `lonfilled` = True).
+- **45,263 sold rows** have coordinates imputed upstream (`latfilled` / `lonfilled` = True). Only the 108,157 rows from the `_filled` monthly exports carry this flag (it is null elsewhere), so that is about 42% of the rows where it is recorded and 11% of all Sold rows.
 - Roughly **1.2% of sold rows** (4,897) have at least one data-quality flag (excluding the duplicate-key flag), and 586 sold rows and 276 listing rows share a `ListingKey` with another row.
 - Date-order violations (510 sold, 530 listings) mostly involve the purchase contract date, so contract-timeline metrics in Week 6 need to account for them.
 
@@ -294,6 +294,23 @@ Each property's latitude/longitude is spatially joined to the California Departm
 - 735 distinct districts appear in Sold; 341 have >= 100 sales and are summarized in `segment_sold_schooldistrict.csv`.
 - Largest: Los Angeles Unified (42,121 sales, median $980,000), San Diego Unified (14,949, $930,000), Capistrano Unified (8,605, $1,350,000, the priciest of the large districts).
 
+### Dashboard prep (ZIP, city, agents, monthly activity)
+
+**Script:** `week6_dashboard_prep.py` (run after the school-district script). The Weeks 8-10 dashboards must filter by city, county and zip code, rank the top 100 listing agents and offices by sales volume and units, and show monthly new listings vs. closed sales. Original columns are never overwritten; clean versions are added next to them.
+
+| Column / table | What it does |
+|---|---|
+| `zip5` | 5-digit ZIP. 2,130 Sold rows had ZIP+4 (`94563-4211`); values that are not a 5-digit ZIP (e.g. `907013`, `0`) become `Unknown` (4 Sold, 18 Listings). |
+| `city_clean` | Merges case variants (`Marina del Rey` / `Marina Del Rey`, `Corona del Mar`, `Playa del Rey`, `Cardiff by the Sea`, `McFarland`). Neighborhood names such as `Mission Hills (San Fernando)` are real and left alone. |
+| `list_agent_clean` | Merges case/spacing variants of `ListAgentFullName` (`RANDY ANDERSON` -> `Randy Anderson`): 77,942 -> 76,907 distinct names in Sold. |
+| `segment_*_listagent.csv` | Top 100 listing agents with units and total sales volume. |
+| `segment_*_zip.csv` | Summary per ZIP (811 ZIPs with >= 100 sales in Sold). |
+| `monthly_market_activity.csv` | Per month: distinct new listings (by `ListingContractDate`), closed sales (Sold, by `CloseDate`), sales volume, medians, and the sales-to-new-listings ratio. |
+
+- Office and agent segment tables now include `sales_volume` (total dollars closed) alongside units.
+- **Agent matching is by name.** The extract has no listing-agent ID, so two different agents with the same name would be merged. Of the 100 top agent names, 22 list under more than one office, which is common when agents change brokerage but cannot be separated here.
+- **New-listing counts look incomplete in several months.** The raw `CRMLSListing` files fall from about 40,000 rows in May 2025 to about 26,000 from June 2025 on, and January 2026 has only 2,606 rows (1,721 residential new listings vs. about 20,000 normal). Nov-Dec 2024 are also low. The "new listings" dashboard will show artificial dips in those months unless the extracts are re-pulled; flag this to the program team.
+
 ---
 
 ## How to Run
@@ -306,6 +323,7 @@ python week2_3_validation_enrichment.py    # -> *_filtered.csv, *_with_rates.csv
 python week4_5_cleaning.py                 # -> sold_cleaned.csv, listings_cleaned.csv
 python week6_feature_engineering.py        # -> sold_featured.csv, listings_featured.csv, segment_*.csv
 .venv/bin/python week6_school_districts.py # -> adds school district columns to the featured files (needs geopandas)
+python week6_dashboard_prep.py             # -> zip5, city_clean, list_agent_clean, segment_*_listagent/zip.csv, monthly_market_activity.csv
 ```
 
 Requires Python 3 with `pandas`, `numpy`, and `matplotlib`. The Weeks 2-3 script needs internet access to fetch the FRED series. All generated CSVs, plots and run logs stay local because the underlying data is confidential.
