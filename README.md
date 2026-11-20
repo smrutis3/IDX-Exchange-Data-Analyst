@@ -4,7 +4,7 @@ Code, progress, and findings for the **IDX Exchange 12-Week Data Analyst Interns
 
 **Data:** monthly CRMLS (California Regional MLS) Listing and Sold files, January 2024 - April 2026, produced from the CoreLogic Trestle API. The data is confidential MLS transaction data, so **no data files are committed to this repo** - only code and aggregate findings.
 
-**Pipeline:** `week1_aggregation.py` -> `week2_3_validation_enrichment.py` -> `week4_5_cleaning.py` -> `week6_feature_engineering.py` -> *(Week 7+ outliers, Tableau)*
+**Pipeline:** `week1_aggregation.py` -> `week2_3_validation_enrichment.py` -> `week4_5_cleaning.py` -> `week6_feature_engineering.py` -> `week7_outliers.py` -> *(Tableau)*
 
 ---
 
@@ -14,7 +14,7 @@ Code, progress, and findings for the **IDX Exchange 12-Week Data Analyst Interns
 - [x] **Weeks 2-3:** Dataset structuring, validation, EDA & FRED mortgage rate enrichment
 - [x] **Weeks 4-5:** Data cleaning, transformation & quality flags
 - [x] **Week 6:** Feature engineering, housing market metrics & school-district join
-- [ ] **Week 7:** Outlier detection (IQR) & quality flags
+- [x] **Week 7:** Outlier detection (IQR) & quality flags
 - [ ] **Weeks 8-10:** Tableau dashboards (market & competitive analysis)
 - [ ] **Weeks 11-12:** Market intelligence report & final presentation
 
@@ -313,6 +313,57 @@ Each property's latitude/longitude is spatially joined to the California Departm
 
 ---
 
+## Week 7 - Outlier Detection (IQR) and Data Quality
+
+**Objective:** flag extreme values instead of deleting them, and produce a separate filtered analysis dataset.
+
+**Script:** `week7_outliers.py` (input: the Week 6 featured datasets)
+
+**Method (handbook formula):** `Q1`, `Q3`, `IQR = Q3 - Q1`, outlier if outside `Q1 - 1.5*IQR` .. `Q3 + 1.5*IQR`, applied globally per field. Bounds are computed on rows that pass the business rules, so a $0 price or negative days on market cannot drag Q1 down. Percentiles (p1, p99) are printed beside every bound.
+
+**Tiers**
+
+| Tier | Rule | Result |
+|---|---|---|
+| 1 | Business rules (`ClosePrice`/`ListPrice`/`LivingArea` <= 0, `DaysOnMarket` < 0, negative beds/baths) | Always excluded |
+| 2 | 1.5 x IQR on `ClosePrice`, `LivingArea`, `days_on_market` (handbook fields) | Excluded |
+| 3 | `price_per_sqft` and `close_to_original_list_ratio`: flagged at 1.5 x IQR, excluded only when extreme (3 x IQR) | Excluded if extreme |
+
+Tier 3 is a judgment call. At 1.5 x IQR the ratio fence is 0.855-1.118, which would discard real discounts and bidding wars; the 3 x fence (0.756-1.217) still removes source errors such as ratios in the millions and $1M+ per sq ft.
+
+**Outputs:** `*_flagged.csv` (every row, with `closeprice_outlier_flag`, `livingarea_outlier_flag`, `dom_outlier_flag`, `ppsf_outlier_flag`, `close_to_list_outlier_flag`, the two `*_extreme_flag` columns, `any_outlier_flag`, `exclude_from_analysis`) and `*_analysis.csv` (rows with `exclude_from_analysis == False`). Bounds and before/after tables are saved as `outlier_bounds_*.csv` and `outlier_before_after_*.csv`.
+
+### Sold: IQR bounds and flags
+
+| Field | Lower | Upper | p99 | Flagged |
+|---|---|---|---|---|
+| `ClosePrice` | -512,500 | 2,387,500 | 5,550,000 | 30,695 (7.4%) |
+| `LivingArea` | -208 | 3,676 | 5,282 | 18,203 (4.4%) |
+| `days_on_market` | -52 | 108 | 231 | 31,785 (7.7%) |
+| `price_per_sqft` (1.5x / 3x) | -177 / -723 | 1,278 / 1,824 | 1,887 | 17,452 / 4,754 |
+| `close_to_original_list_ratio` (1.5x / 3x) | 0.855 / 0.756 | 1.118 / 1.217 | 1.281 | 39,128 / 11,740 |
+
+### Dataset size and medians before and after filtering
+
+| | Sold before | Sold after | Listings before | Listings after |
+|---|---|---|---|---|
+| Rows | 414,091 | 340,522 (-17.8%) | 547,162 | 464,673 (-15.1%) |
+| Median `ClosePrice` | $822,540 | $780,000 | $850,000 | $818,000 |
+| Median `LivingArea` | 1,642 | 1,572 | 1,670 | 1,613 |
+| Median days on market | 18 | 16 | 10 | 9 |
+| Median price per sq ft | $537 | $524 | $562 | $551 |
+| Mean `ClosePrice` | $1,188,390 | $892,611 | $1,203,602 | $935,187 |
+| Max `ClosePrice` | $989.5M | $2.39M | $820M | $2.48M |
+
+### Findings and caveats
+- The mean close price falls 25% after filtering while the median moves 5%: a few extreme records, not the typical home, were distorting the averages.
+- **A global price fence is not neutral.** It flags 30% of San Mateo and 24% of Santa Clara sales as price outliers (vs. 7% in San Diego), because genuinely expensive markets sit above $2.39M. A per-subtype or per-county IQR flags about the same number of rows overall (29,928 / 30,373) but redistributes them. The handbook method is global, so that is what the filtered dataset uses; for county-level price dashboards, use `*_flagged.csv` and filter on the flags deliberately, or use medians.
+- The 108-day DOM fence also removes legitimate slow sales, so median DOM in the filtered data (16) is lower than the raw median (18).
+- Date-order and coordinate flags from Weeks 4-5 do not exclude a row; they do not affect these metrics, and excluding them would remove homes from the zip-code and map dashboards.
+- Repeated `ListingKey`s (586 Sold rows) are kept: every pair has a different `CloseDate`, so none can be dropped as a safe duplicate.
+
+---
+
 ## How to Run
 
 Place the monthly CRMLS CSVs in a local `csv/` folder (not tracked), then from the repo root:
@@ -324,6 +375,7 @@ python week4_5_cleaning.py                 # -> sold_cleaned.csv, listings_clean
 python week6_feature_engineering.py        # -> sold_featured.csv, listings_featured.csv, segment_*.csv
 .venv/bin/python week6_school_districts.py # -> adds school district columns to the featured files (needs geopandas)
 python week6_dashboard_prep.py             # -> zip5, city_clean, list_agent_clean, segment_*_listagent/zip.csv, monthly_market_activity.csv
+python week7_outliers.py                   # -> sold/listings_flagged.csv (all rows + outlier flags), *_analysis.csv (filtered)
 ```
 
 Requires Python 3 with `pandas`, `numpy`, and `matplotlib`. The Weeks 2-3 script needs internet access to fetch the FRED series. All generated CSVs, plots and run logs stay local because the underlying data is confidential.
