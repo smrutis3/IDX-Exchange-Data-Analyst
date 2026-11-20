@@ -23,6 +23,8 @@ Rules
     listing_to_contract_days and days_on_market need no close, so they use any row with the inputs.
   - Segment tables use Closed sales only and require a minimum number of sales per segment
     (the year_month table is the exception: every month is kept, in chronological order).
+  - MLSAreaMajor's 'Not Defined' placeholder (e.g. '699 - Not Defined') becomes 'Unknown' in
+    mls_area_clean, which is the field used for the MLSAreaMajor segment table.
   - Office names are normalized into list_office_clean / buyer_office_clean (spelling, case,
     punctuation and legal-suffix variants of the same brokerage are merged; placeholders such
     as 'NONMEMBER MRML' and nulls are labelled, not ranked). The original columns are untouched
@@ -45,6 +47,17 @@ MIN_SALES = 100          # minimum closed sales for a segment to be reported
 TOP_OFFICES = 100        # offices shown in the competitive tables (handbook: top 100)
 NEW_COLS = ["price_ratio", "close_to_original_list_ratio", "price_per_sqft", "days_on_market",
             "close_year", "close_month", "close_yrmo", "listing_to_contract_days", "contract_to_close_days"]
+
+
+# --- MLS area cleanup ----------------------------------------------------------------------
+# '699 - Not Defined' is the MLS placeholder for "no area assigned"; treat it like a missing value so
+# area charts and filters do not show a huge fake region (about 10% of Sold rows).
+AREA_PLACEHOLDER = re.compile(r"not defined|undefined", re.IGNORECASE)
+
+
+def clean_area(s):
+    return s.where(s.notna() & ~s.astype("string").str.contains(AREA_PLACEHOLDER, na=False),
+                   UNKNOWN).fillna(UNKNOWN)
 
 
 # --- Office name normalization -------------------------------------------------------------
@@ -122,6 +135,9 @@ def engineer(df, name, office_map):
     df["listing_to_contract_days"] = l2c.where(l2c >= 0)
     df["contract_to_close_days"] = c2c.where((c2c >= 0) & closed)
 
+    # MLSAreaMajor with the 'Not Defined' placeholder folded into Unknown (original kept)
+    df["mls_area_clean"] = clean_area(df["MLSAreaMajor"])
+
     # Normalized office names for the competitive analysis (originals kept)
     df["list_office_clean"] = apply_office_map(df["ListOfficeName"], office_map)
     df["buyer_office_clean"] = apply_office_map(df["BuyerOfficeName"], office_map)
@@ -182,7 +198,7 @@ def segments(df, label):
         "propertytype": ("PropertyType", None),
         "propertysubtype": ("PropertySubType", None),
         "county": ("CountyOrParish", None),
-        "mlsareamajor": ("MLSAreaMajor", 40),
+        "mlsareamajor": ("mls_area_clean", 40),
         "listoffice": ("list_office_clean", TOP_OFFICES),
         "buyeroffice": ("buyer_office_clean", TOP_OFFICES),
         "year_month": ("close_yrmo", None),
@@ -192,7 +208,8 @@ def segments(df, label):
             t = summarize(df, col, min_n=1, by_index=True)
         else:
             # offices: placeholders are not brokerages, so they are not ranked
-            t = summarize(df, col, top=top, exclude=(NONMEMBER, UNKNOWN) if "office" in col else ())
+            t = summarize(df, col, top=top, exclude=(NONMEMBER, UNKNOWN) if "office" in col
+                      else (UNKNOWN,) if col == "mls_area_clean" else ())
         path = DATA / f"segment_{label}_{key}.csv"
         t.to_csv(path)
         title = f"By {col}" + (f" (top {top} by sales)" if top else "")

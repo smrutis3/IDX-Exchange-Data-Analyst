@@ -30,6 +30,11 @@ Rules
               EXTREME (3 x IQR, `*_extreme_flag`). A 1.5 x fence on these cuts normal sales (a ratio below
               0.855 is a real discount); the 3 x fence still removes the source errors
               (ratios in the millions, $1M+ per sq ft).
+  - Timeline cap (business rule, not IQR): listing_to_contract_days or contract_to_close_days above
+    TIMELINE_CAP_DAYS (365) is flagged in `*_timeline_extreme_flag` / `timeline_extreme_flag`. These fields
+    have source errors (up to 14,657 and 36,629 days) that IQR is not designed for. The flag does NOT
+    exclude the row - the price, size and DOM values on it are fine - it tells timeline charts which
+    rows to leave out. Medians barely move; means move a lot (see the log).
   - Date-order and coordinate flags from Weeks 4-5 do NOT exclude a row: they do not affect these
     price/size/time metrics, and dropping them would remove homes from the zip/map dashboards.
   - Repeated ListingKeys are kept (each has a different CloseDate, so it is not a safe duplicate).
@@ -57,6 +62,7 @@ FIELDS = {
     "price_per_sqft": "ppsf_outlier_flag",
     "close_to_original_list_ratio": "close_to_list_outlier_flag",
 }
+TIMELINE_CAP_DAYS = 365   # longer than a year from listing to contract / contract to close = source error
 EXTREME_K = 3.0   # IQR multiplier for the exclusion fence on price_per_sqft / close_to_original_list_ratio
 EXTREME = {"price_per_sqft": "ppsf_extreme_flag", "close_to_original_list_ratio": "close_to_list_extreme_flag"}
 EXCLUDE_FLAGS = ["closeprice_outlier_flag", "livingarea_outlier_flag", "dom_outlier_flag"] + list(EXTREME.values())
@@ -120,6 +126,26 @@ def flag_outliers(df, name):
     return df, bounds
 
 
+def timeline_flags(df, name):
+    banner(f"TIMELINE CAP FLAGS - {name.upper()} (> {TIMELINE_CAP_DAYS} days)")
+    rows = []
+    for col, flag in (("listing_to_contract_days", "l2c_timeline_extreme_flag"),
+                      ("contract_to_close_days", "c2c_timeline_extreme_flag")):
+        x = pd.to_numeric(df[col], errors="coerce")
+        df[flag] = x > TIMELINE_CAP_DAYS                       # null never flagged
+        capped = x.where(~df[flag])
+        rows.append({"field": col, "n": int(x.notna().sum()), "flagged": int(df[flag].sum()),
+                     "flagged_pct": round(100 * df[flag].sum() / max(x.notna().sum(), 1), 2),
+                     "max": x.max(), "median_before": x.median(), "median_after": capped.median(),
+                     "mean_before": round(x.mean(), 2), "mean_after": round(capped.mean(), 2)})
+    df["timeline_extreme_flag"] = df[["l2c_timeline_extreme_flag", "c2c_timeline_extreme_flag"]].any(axis=1)
+    out = pd.DataFrame(rows).set_index("field")
+    print(out.to_string())
+    print(f"rows with a timeline flag: {int(df['timeline_extreme_flag'].sum()):,} "
+          f"({df['timeline_extreme_flag'].mean():.2%}); NOT excluded from the analysis dataset")
+    return df
+
+
 def subtype_sensitivity(df):
     """Not the method - a check on how much a single global ClosePrice range favours cheap subtypes/areas."""
     banner("SENSITIVITY CHECK (not applied): global vs. per-group IQR on ClosePrice")
@@ -162,6 +188,7 @@ def main():
         df = pd.read_csv(DATA / f"{name}_featured.csv", low_memory=False)
         n = len(df)
         df, bounds = flag_outliers(df, name)
+        df = timeline_flags(df, name)
         if name == "sold":
             subtype_sensitivity(df)
         kept = df[~df["exclude_from_analysis"]]
