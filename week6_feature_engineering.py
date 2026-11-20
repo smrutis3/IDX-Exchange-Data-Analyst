@@ -156,7 +156,8 @@ def summarize(df, by, min_n=MIN_SALES, top=None, exclude=(), by_index=False):
     d = d[~d[by].isin(exclude)]
     g = d.groupby(by, dropna=False)
     out = pd.DataFrame({
-        "sales": g.size(),
+        "sales": g.size(),                          # units
+        "sales_volume": g["ClosePrice"].sum(),      # total $ closed (handbook: rank by volume and units)
         "median_close_price": g["ClosePrice"].median(),
         "mean_close_price": g["ClosePrice"].mean().round(0),
         "median_price_per_sqft": g["price_per_sqft"].median(),
