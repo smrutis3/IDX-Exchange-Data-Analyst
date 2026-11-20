@@ -1,0 +1,89 @@
+
+==============================================================================
+BOUNDARY FILE
+==============================================================================
+936 districts: {'Elementary': 515, 'Unified': 345, 'High': 76}   CRS -> EPSG:4326
+
+==============================================================================
+SCHOOL DISTRICT JOIN - SOLD
+==============================================================================
+rows=414,091  usable coordinates=409,891  unique points to join=375,938
+
+Match source:
+                          rows    pct
+school_district_source               
+polygon                 409772  98.96
+no_valid_coordinates      4200   1.01
+nearest_1km                109   0.03
+unmatched                   10   0.00
+
+Rows with a school district: 409,881 (99.0%);  distinct districts: 735
+District type of matched rows: {'Unified': 308342, 'Elementary': 101539}
+
+==============================================================================
+SANITY CHECK - district county vs. listing county
+==============================================================================
+matched rows whose district county == CountyOrParish: 99.7% (districts can span a county line, so 100% is not expected)
+
+By school_district (>= 100 sales) [341 districts] -> segment_sold_schooldistrict.csv
+                           sales  median_close_price  median_price_per_sqft  median_days_on_market  median_close_to_orig_list
+school_district                                                                                                              
+Los Angeles Unified        42121            980000.0                645.062                   21.0                      0.990
+San Diego Unified          14949            930000.0                710.734                   14.0                      0.990
+Capistrano Unified          8605           1350000.0                691.062                   16.0                      0.987
+Desert Sands Unified        8180            595000.0                329.462                   50.0                      0.963
+Palm Springs Unified        7646            570000.0                346.369                   48.0                      0.961
+Long Beach Unified          5795            847000.0                642.446                   15.0                      1.000
+Saddleback Valley Unified   5775            935000.0                612.381                   16.0                      0.991
+Oakland Unified             4799            847000.0                576.599                   18.0                      1.034
+Hemet Unified               4748            450000.0                261.346                   29.0                      0.992
+Corona-Norco Unified        4632            803000.0                388.384                   20.0                      0.995
+Mt. Diablo Unified          4130            825000.0                528.013                   13.0                      1.000
+Riverside Unified           4050            660000.0                375.000                   21.0                      0.996
+Temecula Valley Unified     3856            722500.0                342.375                   19.0                      0.993
+Irvine Unified              3850           1593000.0                835.962                   15.0                      0.988
+Menifee Union               3788            586995.0                289.474                   24.0                      0.993
+
+Saved sold_featured.csv: 414,091 rows x 101 cols
+
+==============================================================================
+SCHOOL DISTRICT JOIN - LISTINGS
+==============================================================================
+rows=547,162  usable coordinates=466,603  unique points to join=386,863
+
+Match source:
+                          rows    pct
+school_district_source               
+polygon                 466445  85.25
+no_valid_coordinates     80559  14.72
+nearest_1km                141   0.03
+unmatched                   17   0.00
+
+Rows with a school district: 466,586 (85.3%);  distinct districts: 757
+District type of matched rows: {'Unified': 357753, 'Elementary': 108833}
+
+==============================================================================
+SANITY CHECK - district county vs. listing county
+==============================================================================
+matched rows whose district county == CountyOrParish: 99.7% (districts can span a county line, so 100% is not expected)
+
+By school_district (>= 100 sales) [231 districts] -> segment_listings_schooldistrict.csv
+                           sales  median_close_price  median_price_per_sqft  median_days_on_market  median_close_to_orig_list
+school_district                                                                                                              
+Los Angeles Unified        13591           1000000.0                659.474                   14.0                      1.000
+San Diego Unified           4579            925000.0                704.762                   11.0                      0.994
+Capistrano Unified          2743           1327000.0                692.675                   10.0                      0.996
+Desert Sands Unified        2308            595000.0                334.460                   32.0                      0.977
+Palm Springs Unified        2153            589000.0                348.625                   30.0                      0.974
+Long Beach Unified          1822            850000.0                649.693                   10.0                      1.000
+Saddleback Valley Unified   1754           1000000.0                620.185                   13.0                      0.995
+Irvine Unified              1346           1542687.5                827.656                   11.0                      0.993
+Oakland Unified             1314            850500.0                580.255                   14.0                      1.053
+Corona-Norco Unified        1299            800000.0                387.821                   14.0                      1.000
+Mt. Diablo Unified          1276            815000.0                526.332                   11.0                      1.000
+Hemet Unified               1254            449000.0                263.871                   18.0                      1.000
+Riverside Unified           1214            650000.0                380.485                   14.0                      1.000
+Temecula Valley Unified     1180            700000.0                341.683                   14.5                      0.998
+Newport-Mesa Unified        1159           2250000.0               1150.086                    8.0                      1.000
+
+Saved listings_featured.csv: 547,162 rows x 94 cols

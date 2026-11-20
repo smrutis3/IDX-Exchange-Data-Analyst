@@ -1,0 +1,132 @@
+
+==============================================================================
+IQR OUTLIER FLAGS - SOLD
+==============================================================================
+rows=414,091   business-rule invalid (any_invalid_numeric_flag): 199
+
+IQR bounds, with percentiles for context (handbook: use percentiles alongside IQR):
+                                               n_used          Q1           Q3         IQR       lower        upper          p1          p99           max  below_lower  above_upper  flagged  flagged_pct
+field                                                                                                                                                                                                     
+ClosePrice                                     413888  575000.000  1300000.000  725000.000 -512500.000  2387500.000  203000.000  5550000.000  9.895000e+08            0        30695    30695         7.42
+LivingArea                                     413658    1248.000     2219.000     971.000    -208.500     3675.500     609.000     5282.430  1.702132e+07            0        18203    18203         4.40
+days_on_market                                 413892       8.000       48.000      40.000     -52.000      108.000       0.000      231.000  1.243000e+04            0        31785    31785         7.68
+price_per_sqft                                 413654     368.421      732.351     363.930    -177.474     1278.247     161.055     1887.400  1.164067e+06            0        17452    17452         4.22
+close_to_original_list_ratio                   413125       0.954        1.020       0.066       0.855        1.118       0.747        1.281  9.118000e+06        19114        20014    39128         9.47
+price_per_sqft (extreme, 3xIQR)                413654     368.421      732.351     363.930    -723.370     1824.142     161.055     1887.400  1.164067e+06            0         4754     4754         1.15
+close_to_original_list_ratio (extreme, 3xIQR)  413125       0.954        1.020       0.066       0.756        1.217       0.747        1.281  9.118000e+06         4699         7041    11740         2.84
+
+Rows flagged per rule:
+                            flagged
+closeprice_outlier_flag       30695
+livingarea_outlier_flag       18203
+dom_outlier_flag              31785
+ppsf_outlier_flag             17452
+close_to_list_outlier_flag    39128
+ppsf_extreme_flag              4754
+close_to_list_extreme_flag    11740
+any_outlier_flag              95257
+
+Excluded from analysis (tier 1 business rules, tier 2 IQR on price/area/DOM, tier 3 extreme ppsf/ratio): 73,569 of 414,091 (17.8%)
+
+==============================================================================
+TIMELINE CAP FLAGS - SOLD (> 365 days)
+==============================================================================
+                               n  flagged  flagged_pct      max  median_before  median_after  mean_before  mean_after
+field                                                                                                                
+listing_to_contract_days  413626     1744         0.42  14657.0           25.0          24.0        45.28       43.31
+contract_to_close_days    413657      211         0.05  36629.0           29.0          29.0        31.66       31.30
+rows with a timeline flag: 1,951 (0.47%); NOT excluded from the analysis dataset
+
+==============================================================================
+SENSITIVITY CHECK (not applied): global vs. per-group IQR on ClosePrice
+==============================================================================
+  global IQR flags 30,695 ClosePrice outliers; per-PropertySubType IQR would flag 29,928
+  global IQR flags 30,695 ClosePrice outliers; per-CountyOrParish IQR would flag 30,373
+
+Share of each county's sales flagged as ClosePrice outliers by the GLOBAL rule (top 8 counties by % flagged, >= 500 sales):
+                     n  flagged  pct_flagged
+CountyOrParish                              
+San Mateo         7271     2182         30.0
+Santa Clara      18425     4406         23.9
+Monterey          3986      503         12.6
+Santa Barbara     2042      254         12.4
+Orange           46588     5562         11.9
+Los Angeles     102791     9352          9.1
+Santa Cruz        3000      237          7.9
+San Diego        51193     3739          7.3
+
+==============================================================================
+BEFORE vs. AFTER FILTERING - SOLD
+==============================================================================
+                                          before       after  change_pct
+metric                                                                  
+rows                                  414091.000  340522.000      -17.77
+median ClosePrice                     822540.000  780000.000       -5.17
+median LivingArea                       1642.000    1572.000       -4.26
+median days_on_market                     18.000      16.000      -11.11
+median price_per_sqft                    537.441     524.487       -2.41
+median close_to_original_list_ratio        0.996       1.000        0.43
+mean ClosePrice                      1188390.340  892610.576      -24.89
+mean price_per_sqft                      645.949     555.962      -13.93
+
+Max ClosePrice: 989,500,000 -> 2,387,500;  max LivingArea: 17,021,321 -> 3,675;  max days_on_market: 12,430 -> 108
+
+Saved sold_flagged.csv (414,091 rows x 116 cols) and sold_analysis.csv (340,522 rows)
+
+==============================================================================
+IQR OUTLIER FLAGS - LISTINGS
+==============================================================================
+rows=547,162   business-rule invalid (any_invalid_numeric_flag): 387
+
+IQR bounds, with percentiles for context (handbook: use percentiles alongside IQR):
+                                               n_used          Q1           Q3         IQR       lower        upper          p1          p99           max  below_lower  above_upper  flagged  flagged_pct
+field                                                                                                                                                                                                     
+ClosePrice                                     137602  600000.000  1350000.000  750000.000 -525000.000  2475000.000  214505.000  5528000.000  8.200000e+08            0         9916     9916         7.21
+LivingArea                                     546223    1248.000     2300.000    1052.000    -330.000     3878.000     593.000     6282.000  1.702132e+07            0        27011    27011         4.95
+days_on_market                                 546775       5.000       21.000      16.000     -19.000       45.000       0.000      138.000  7.310000e+02            0        48676    48676         8.90
+price_per_sqft                                 137523     393.836      762.111     368.275    -158.578     1314.524     169.264     1961.417  6.844741e+05            0         6265     6265         4.56
+close_to_original_list_ratio                   136807       0.967        1.027       0.061       0.876        1.118       0.796        1.316  1.800000e+06         5295         8698    13993        10.23
+price_per_sqft (extreme, 3xIQR)                137523     393.836      762.111     368.275    -710.991     1866.937     169.264     1961.417  6.844741e+05            0         1705     1705         1.24
+close_to_original_list_ratio (extreme, 3xIQR)  136807       0.967        1.027       0.061       0.785        1.209       0.796        1.316  1.800000e+06         1139         3325     4464         3.26
+
+Rows flagged per rule:
+                            flagged
+closeprice_outlier_flag        9916
+livingarea_outlier_flag       27011
+dom_outlier_flag              48676
+ppsf_outlier_flag              6265
+close_to_list_outlier_flag    13993
+ppsf_extreme_flag              1705
+close_to_list_extreme_flag     4464
+any_outlier_flag              89315
+
+Excluded from analysis (tier 1 business rules, tier 2 IQR on price/area/DOM, tier 3 extreme ppsf/ratio): 82,489 of 547,162 (15.1%)
+
+==============================================================================
+TIMELINE CAP FLAGS - LISTINGS (> 365 days)
+==============================================================================
+                               n  flagged  flagged_pct    max  median_before  median_after  mean_before  mean_after
+field                                                                                                              
+listing_to_contract_days  261217        0          0.0  258.0           13.0          13.0        23.23       23.23
+contract_to_close_days    137400        1          0.0  762.0           25.0          25.0        26.51       26.51
+rows with a timeline flag: 1 (0.00%); NOT excluded from the analysis dataset
+
+==============================================================================
+BEFORE vs. AFTER FILTERING - LISTINGS
+==============================================================================
+                                          before       after  change_pct
+metric                                                                  
+rows                                  547162.000  464673.000      -15.08
+median ClosePrice                     850000.000  818000.000       -3.76
+median LivingArea                       1670.000    1613.000       -3.41
+median days_on_market                     10.000       9.000      -10.00
+median price_per_sqft                    561.760     551.058       -1.91
+median close_to_original_list_ratio        1.000       1.000        0.00
+mean ClosePrice                      1203601.568  935186.848      -22.30
+mean price_per_sqft                      659.405     584.488      -11.36
+
+Max ClosePrice: 820,000,000 -> 2,475,000;  max LivingArea: 17,021,321 -> 3,878;  max days_on_market: 731 -> 45
+
+Saved listings_flagged.csv (547,162 rows x 109 cols) and listings_analysis.csv (464,673 rows)
+
+Week 7 complete.

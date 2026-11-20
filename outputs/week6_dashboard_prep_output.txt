@@ -1,0 +1,137 @@
+
+==============================================================================
+NAME NORMALIZATION
+==============================================================================
+City:  1,226 distinct -> 1,220   (changed: 6)
+                  raw   n                   clean
+       Marina del Rey 486          Marina Del Rey
+       Corona del Mar 388          Corona Del Mar
+        Playa del Rey 232           Playa Del Rey
+   Cardiff by the Sea 158      Cardiff By The Sea
+Westwood Century City  12 Westwood - Century City
+            Mcfarland   6               McFarland
+
+Agent: 90,172 distinct -> 88,800   (changed: 5,750)
+              raw    n             clean
+   RANDY ANDERSON 2003    Randy Anderson
+PATRICIA MARTINEZ 1842 Patricia Martinez
+     LESLIE OLIVO 1150      Leslie Olivo
+     NORMAN BROWN  769      Norman Brown
+    NYLA STERLING  462     Nyla Sterling
+   GABRIEL VALDEZ  451    Gabriel Valdez
+ MELISSA WESTFALL  444  Melissa Westfall
+        GARY DOSS  411         Gary Doss
+     SCOTT TUCKER  273      Scott Tucker
+       CESAR DIAZ  222        Cesar Diaz
+
+==============================================================================
+ADD COLUMNS - SOLD
+==============================================================================
+zip5: 414,087 valid; 2 unusable PostalCode values -> Unknown (e.g. ['907013', '980803'])
+      61 valid-format ZIPs do not start with 9 (out-of-state properties; kept as is)
+city_clean: 1,130 -> 1,124 distinct;  Unknown: 312
+list_agent_clean: 77,942 -> 76,907 distinct;  Unknown: 92
+
+==============================================================================
+ADD COLUMNS - LISTINGS
+==============================================================================
+zip5: 547,131 valid; 18 unusable PostalCode values -> Unknown (e.g. ['0', '0', '907013', '0', '0'])
+      231 valid-format ZIPs do not start with 9 (out-of-state properties; kept as is)
+city_clean: 1,217 -> 1,211 distinct;  Unknown: 580
+list_agent_clean: 86,729 -> 85,483 distinct;  Unknown: 92
+
+Agent-name collision check: 10,450 of 76,906 agent names list under >1 office (normal when agents change brokerage); in the top 100: 22
+
+==============================================================================
+SEGMENTS - SOLD (closed sales)
+==============================================================================
+
+Top 100 listing agents by units -> segment_sold_listagent.csv
+                    sales  sales_volume  median_close_price  median_days_on_market
+list_agent_clean                                                                  
+Randy Anderson       1035   674710134.0            634990.0                   65.0
+Todd Myatt            934   565489294.0            581512.5                   18.0
+Patricia Martinez     838   525479268.0            611209.5                   57.5
+Cesi Pagano           806   943973734.0            991500.0                   29.0
+Melissa Westfall      652   498023608.0            687000.0                   75.5
+Leslie Olivo          594   434131943.0            613265.0                   42.0
+Penelope Xanthakis    521   303197595.0            559170.0                   28.0
+Jonathan Minerick     476   343889098.0            558500.0                   24.0
+Gabriel Valdez        474   353051876.0            680000.0                   45.0
+Melissa Handler       433   260036024.0            593170.0                   25.0
+
+ZIP summary (>= 100 sales): 811 zip codes -> segment_sold_zip.csv
+       sales  median_close_price  median_price_per_sqft
+zip5                                                   
+92253   2685            800000.0                390.258
+92211   2251            540000.0                316.849
+92262   1894            680000.0                436.078
+92223   1847            532000.0                256.765
+92592   1814            774000.0                361.489
+
+Saved sold_featured.csv: 414,091 rows x 104 cols
+
+==============================================================================
+SEGMENTS - LISTINGS (closed sales)
+==============================================================================
+
+Top 100 listing agents by units -> segment_listings_listagent.csv
+                    sales  sales_volume  median_close_price  median_days_on_market
+list_agent_clean                                                                  
+Todd Myatt            364   222534047.0            582173.0                   16.0
+Cesi Pagano           218   260039390.0            999990.0                   21.0
+Douglas Pankey        166    77086026.0            439500.0                    7.0
+Jonathan Minerick     146    99294312.0            550000.0                   13.0
+Wesley Bennett        138    91905258.0            579490.0                   35.5
+Melissa Handler       128    77758651.0            599351.0                   24.5
+Penelope Xanthakis    126    76298007.0            571910.0                   21.0
+Leslie Olivo          117    88280204.0            609990.0                   23.0
+Shawn Black           110    73089418.0            650000.0                   34.0
+Erin Collins          106    70257190.0            639990.0                   30.5
+
+ZIP summary (>= 100 sales): 534 zip codes -> segment_listings_zip.csv
+       sales  median_close_price  median_price_per_sqft
+zip5                                                   
+92253    714            840000.0                403.976
+92211    661            539000.0                323.308
+92592    558            750000.0                359.595
+92262    552            698000.0                435.609
+92596    520            605000.0                285.142
+
+Saved listings_featured.csv: 547,162 rows x 97 cols
+
+==============================================================================
+MONTHLY MARKET ACTIVITY - new listings vs. closed sales
+==============================================================================
+            new_listings  new_listing_rows  closed_sales  sales_to_new_listings_ratio  median_close_price  median_days_on_market
+year_month                                                                                                                      
+2024-01            17007             17007         11194                        0.658            749000.0                   24.0
+2024-02            17490             17490         13063                        0.747            790000.0                   15.0
+2024-03            20501             20501         15784                        0.770            810000.0                   13.0
+2024-04            24025             24025         17295                        0.720            850000.0                   12.0
+2024-05            25447             25447         18474                        0.726            856500.0                   12.0
+2024-06            23310             23310         16625                        0.713            855000.0                   13.0
+2024-07            23019             23019         17809                        0.774            850000.0                   14.0
+2024-08            22215             22215         16758                        0.754            830000.0                   16.0
+2024-09            22257             22257         14547                        0.654            823000.0                   18.0
+2024-10            21921             21921         16275                        0.742            849000.0                   18.0
+2024-11            15108             15108         14158                        0.937            835000.0                   20.0
+2024-12            10694             10694         14220                        1.330            815000.0                   25.0
+2025-01            22690             22690         10976                        0.484            797387.5                   28.0
+2025-02            21930             21930         12101                        0.552            835000.0                   18.0
+2025-03            25104             25104         14409                        0.574            815000.0                   16.0
+2025-04            26695             26695         15851                        0.594            830000.0                   16.0
+2025-05            26438             26438         15543                        0.588            835000.0                   17.0
+2025-06            17056             17056         15328                        0.899            840000.0                   20.0
+2025-07            17194             17194         15798                        0.919            825000.0                   22.0
+2025-08            15658             15658         15222                        0.972            815000.0                   25.0
+2025-09            16859             16859         15134                        0.898            815000.0                   25.0
+2025-10            17186             17186         15897                        0.925            820000.0                   26.0
+2025-11            12194             12194         12978                        1.064            812500.0                   26.0
+2025-12            10516             10516         13975                        1.329            795000.0                   28.0
+2026-01             1721              1721         10083                        5.859            780000.0                   33.0
+2026-02            20823             20823         12272                        0.589            800000.0                   23.0
+2026-03            25614             25614         15656                        0.611            814750.0                   18.0
+2026-04            26490             26490         16666                        0.629            837900.0                   16.0
+
+-> monthly_market_activity.csv  (new_listings counts distinct ListingKey; new_listing_rows is the raw row count)
