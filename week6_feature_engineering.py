@@ -6,7 +6,7 @@ Takes the Weeks 4-5 cleaned datasets and engineers the market metrics that power
 Tableau dashboards, then summarizes them by segment.
 
 Metrics created
-  price_ratio                   ClosePrice / ListPrice            (final list price: negotiation at the end)
+  price_ratio                   ClosePrice / OriginalListPrice    (handbook formula: negotiation strength)
   close_to_original_list_ratio  ClosePrice / OriginalListPrice    (includes the full price-reduction history)
   price_per_sqft                ClosePrice / LivingArea
   days_on_market                DaysOnMarket (raw field, negatives -> null)
@@ -101,8 +101,10 @@ def engineer(df, name, office_map):
     print(f"rows={n:,}  closed={closed.sum():,}")
 
     # Price metrics (closed sales only)
-    df["price_ratio"] = safe_ratio(df["ClosePrice"], df["ListPrice"]).where(closed)
+    # Handbook defines Price Ratio and Close-to-Original-List Ratio with the same formula,
+    # so the two columns are identical by design.
     df["close_to_original_list_ratio"] = safe_ratio(df["ClosePrice"], df["OriginalListPrice"]).where(closed)
+    df["price_ratio"] = df["close_to_original_list_ratio"]
     df["price_per_sqft"] = safe_ratio(df["ClosePrice"], df["LivingArea"]).where(closed)
 
     # Days on market: raw field, negative values are invalid
@@ -161,7 +163,8 @@ def summarize(df, by, min_n=MIN_SALES, top=None, exclude=(), by_index=False):
         "median_days_on_market": g["days_on_market"].median(),
         "median_price_ratio": g["price_ratio"].median(),
         "median_close_to_orig_list": g["close_to_original_list_ratio"].median(),
-        "pct_sold_over_list": g["price_ratio"].apply(lambda s: (s.dropna() > 1).mean() * 100),
+        # share of sales above the FINAL list price (same definition as the Weeks 2-3 EDA)
+        "pct_sold_over_list": g.apply(lambda x: (x["ClosePrice"] > x["ListPrice"])[x["ListPrice"] > 0].mean() * 100),
         "median_listing_to_contract_days": g["listing_to_contract_days"].median(),
         "median_contract_to_close_days": g["contract_to_close_days"].median(),
     })
