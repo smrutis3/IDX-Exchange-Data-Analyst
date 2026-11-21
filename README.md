@@ -300,6 +300,7 @@ Each property's latitude/longitude is spatially joined to the California Departm
 
 | Column / table | What it does |
 |---|---|
+| `mls_area_clean` | `MLSAreaMajor` with the MLS placeholder `699 - Not Defined` folded into `Unknown` (43,376 Sold rows, 10.5%; 98,783 `Unknown` in total, 23.9%). The MLSAreaMajor segment table uses this column and leaves out `Unknown`. Created in `week6_feature_engineering.py`; `CountyOrParish`, `city_clean` and `zip5` are the more reliable geography fields. |
 | `zip5` | 5-digit ZIP. 2,130 Sold rows had ZIP+4 (`94563-4211`); values that are not a 5-digit ZIP (e.g. `907013`, `0`) become `Unknown` (4 Sold, 18 Listings). |
 | `city_clean` | Merges case variants (`Marina del Rey` / `Marina Del Rey`, `Corona del Mar`, `Playa del Rey`, `Cardiff by the Sea`, `McFarland`). Neighborhood names such as `Mission Hills (San Fernando)` are real and left alone. |
 | `list_agent_clean` | Merges case/spacing variants of `ListAgentFullName` (`RANDY ANDERSON` -> `Randy Anderson`): 77,942 -> 76,907 distinct names in Sold. |
@@ -331,7 +332,7 @@ Each property's latitude/longitude is spatially joined to the California Departm
 
 Tier 3 is a judgment call. At 1.5 x IQR the ratio fence is 0.855-1.118, which would discard real discounts and bidding wars; the 3 x fence (0.756-1.217) still removes source errors such as ratios in the millions and $1M+ per sq ft.
 
-**Outputs:** `*_flagged.csv` (every row, with `closeprice_outlier_flag`, `livingarea_outlier_flag`, `dom_outlier_flag`, `ppsf_outlier_flag`, `close_to_list_outlier_flag`, the two `*_extreme_flag` columns, `any_outlier_flag`, `exclude_from_analysis`) and `*_analysis.csv` (rows with `exclude_from_analysis == False`). Bounds and before/after tables are saved as `outlier_bounds_*.csv` and `outlier_before_after_*.csv`.
+**Outputs:** `*_flagged.csv` (every row, with `closeprice_outlier_flag`, `livingarea_outlier_flag`, `dom_outlier_flag`, `ppsf_outlier_flag`, `close_to_list_outlier_flag`, the two `*_extreme_flag` columns, `any_outlier_flag`, `exclude_from_analysis`, plus the timeline flags below) and `*_analysis.csv` (rows with `exclude_from_analysis == False`). Bounds and before/after tables are saved as `outlier_bounds_*.csv` and `outlier_before_after_*.csv`.
 
 ### Sold: IQR bounds and flags
 
@@ -359,6 +360,7 @@ Tier 3 is a judgment call. At 1.5 x IQR the ratio fence is 0.855-1.118, which wo
 - The mean close price falls 25% after filtering while the median moves 5%: a few extreme records, not the typical home, were distorting the averages.
 - **A global price fence is not neutral.** It flags 30% of San Mateo and 24% of Santa Clara sales as price outliers (vs. 7% in San Diego), because genuinely expensive markets sit above $2.39M. A per-subtype or per-county IQR flags about the same number of rows overall (29,928 / 30,373) but redistributes them. The handbook method is global, so that is what the filtered dataset uses; for county-level price dashboards, use `*_flagged.csv` and filter on the flags deliberately, or use medians.
 - The 108-day DOM fence also removes legitimate slow sales, so median DOM in the filtered data (16) is lower than the raw median (18).
+- **Timeline cap flag.** `listing_to_contract_days` and `contract_to_close_days` contain source errors (up to 14,657 and 36,629 days) that IQR is not suited to, so values above 365 days are flagged with `l2c_timeline_extreme_flag`, `c2c_timeline_extreme_flag` and `timeline_extreme_flag`. This is a fixed business rule, and it does not exclude the row (its price, size and DOM are fine); timeline charts should filter `timeline_extreme_flag == False`. In Sold, 1,744 rows (0.42%) exceed the cap on listing-to-contract and 211 (0.05%) on contract-to-close. Medians barely move (25 -> 24 and 29 -> 29 days); the mean listing-to-contract falls from 45.3 to 43.3 days. Listings has 1 flagged row.
 - Date-order and coordinate flags from Weeks 4-5 do not exclude a row; they do not affect these metrics, and excluding them would remove homes from the zip-code and map dashboards.
 - Repeated `ListingKey`s (586 Sold rows) are kept: every pair has a different `CloseDate`, so none can be dropped as a safe duplicate.
 
