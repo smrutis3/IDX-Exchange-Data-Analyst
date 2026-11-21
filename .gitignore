@@ -7,3 +7,4 @@ py/*.csv
 .venv/
 geo/
 __pycache__/
+tableau/

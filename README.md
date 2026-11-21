@@ -366,6 +366,24 @@ Tier 3 is a judgment call. At 1.5 x IQR the ratio fence is 0.855-1.118, which wo
 
 ---
 
+## Weeks 8-10 prep - Tableau Exports
+
+**Script:** `week8_tableau_export.py` (input: the Week 7 flagged files)
+
+The Week 7 flagged files are about 400 MB with 110+ columns. This script writes lean CSVs with only the fields behind the handbook's required dashboards (monthly median close price, average days on market, average close-to-original-list ratio, new listings, closed sales, top 100 agents and offices, zip heat maps). No rows are removed and no data is changed.
+
+| File | Rows | Columns | Size |
+|---|---|---|---|
+| `tableau/tableau_sold.csv` | 414,091 | 33 (from 116) | 130 MB (from 395 MB) |
+| `tableau/tableau_listings.csv` | 547,162 | 28 (from 110) | 140 MB (from 426 MB) |
+
+- The five quality flags are consolidated: `include_in_analysis` (the Week 7 tiered filter), `price_outlier_flag`, `timeline_extreme_flag`, `bad_coordinates_flag` and `duplicate_listingkey_flag`. `tableau/README_tableau.txt` says which flag to use for which chart (e.g. use `include_in_analysis` for typical-market medians, but not the price flag on county or zip price charts).
+- `price_ratio` is dropped from the export because it is identical to `close_to_original_list_ratio`; `DaysOnMarket` is dropped in favour of `days_on_market`.
+- **Reconciliation:** the exports reproduce the monthly closed-sales and distinct new-listing counts in `monthly_market_activity.csv` exactly (difference 0 for every month), and `include_in_analysis` matches the Week 7 analysis datasets row for row.
+- The `tableau/` folder is gitignored because it contains confidential MLS data.
+
+---
+
 ## How to Run
 
 Place the monthly CRMLS CSVs in a local `csv/` folder (not tracked), then from the repo root:
@@ -378,6 +396,7 @@ python week6_feature_engineering.py        # -> sold_featured.csv, listings_feat
 .venv/bin/python week6_school_districts.py # -> adds school district columns to the featured files (needs geopandas)
 python week6_dashboard_prep.py             # -> zip5, city_clean, list_agent_clean, segment_*_listagent/zip.csv, monthly_market_activity.csv
 python week7_outliers.py                   # -> sold/listings_flagged.csv (all rows + outlier flags), *_analysis.csv (filtered)
+python week8_tableau_export.py             # -> tableau/tableau_sold.csv, tableau_listings.csv (lean exports for Tableau)
 ```
 
 Requires Python 3 with `pandas`, `numpy`, and `matplotlib`. The Weeks 2-3 script needs internet access to fetch the FRED series. All generated CSVs, plots and run logs stay local because the underlying data is confidential.
